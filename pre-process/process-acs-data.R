@@ -5,7 +5,7 @@ library(data.table)
 # Database Connection
 library(censusapi)
 
-Sys.setenv(CENSUS_KEY='6d9263105b3ca3213e093323b4ece211ab49d4e5')
+Sys.setenv(CENSUS_KEY='<enter-api-key>')
 setwd("C:/projects/equity-dashboard")
 results <- NULL
 
