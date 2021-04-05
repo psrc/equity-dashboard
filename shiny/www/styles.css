@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&display=swap');
+
+body {
+  font-family: 'pragmatica-web', sans-serif;
+  font-size: 12pt;
+  color: black;
+  background-color: #F8F8F8;
+}
+
+h1 {
+  color: #34343c;
+  font-size: 1.75em;
+  font-weight: 300;
+}
+
+h2 {
+  color: #34343c;
+  font-size: 1.50em;
+  font-weight: 300;
+}
+
+h3 {
+  color: #34343c;
+  font-size: 1.25em;
+  font-weight: 300;
+}
+
+h4 {
+  color: #34343c;
+  font-size: 1.00em;
+  font-weight: 300;
+}
+
+i {
+  color: #76787A;
+  font-size: 20pt;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+#sidebar {
+  background-color: white;
+}
+
+#mainpanel {
+  background-color: white;
+}
+
+.source_url {
+  color: #91268F;
+  font-size: 10pt;
+}
+
+.sidebar_headings {
+  font-size: 18pt;
+  color: #8CC63E;
+}
+
+.sidebar_notes {
+  font-size: 12pt;
+  color: #76787A;
+}
+
+.sidebar_data {
+  font-size: 12pt;
+  color: #91268F;
+}
+
+.sidebar_label {
+  font-size: 12pt;
+  color: #8CC63E;
+}
+
+.datatables {
+  font-size: 12pt; 
+}
+
+nav {
+  font-size: 20pt;
+  background-color: white;
+  text-align: center;
+  width: 50%;
+  margin: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  
+}
+
+.navbar {
+  background-color: transparent;
+}
+
+.col-sm-3 {
+  width: 18%;
+}
+
+.fa:hover {color: #91268F;}
+
+.navbar-default .navbar-nav > .active > a:focus {background-color: #E3C9E3;}
+
