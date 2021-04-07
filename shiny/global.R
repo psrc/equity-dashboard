@@ -36,7 +36,7 @@ psrc.colors <- list("Black or African American" = "#AD5CAB",
 
 # Functions --------------------------------------------------------
 
-create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estimate", s.type, y.limit) {
+create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estimate", s.type, y.limit, w.label, w.dec, w.pre="", w.suff="", w.fact=1.0) {
 
   # Filter Data
   tbl <- data %>%
@@ -56,13 +56,13 @@ create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estim
                       aes(x = Household_Race, 
                           y = Estimate, 
                           fill = Household_Race,
-                          text = paste0("<b>", Household_Race, ": $</b>", prettyNum(round(Estimate, -2), big.mark = ","), "<br>"))) +
+                          text = paste0("<b>", Household_Race, ": ",w.pre,"</b>", prettyNum(round(Estimate*w.fact, w.dec), big.mark = ","), w.suff,"<br>"))) +
                  geom_col(
                    color = "black",
                    alpha = 1.0,
                    position = "dodge") +
                  labs(x = NULL, y = NULL) +
-                 scale_y_continuous(labels = label_comma(), limits=c(0,y.limit)) +
+                 scale_y_continuous(labels = w.label, limits=c(0,y.limit)) +
                  scale_fill_manual(values= psrc.colors) +
                  theme(plot.title = element_text(size = 10, face = 'bold'),
                        axis.text.x = element_blank(),
@@ -76,7 +76,8 @@ create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estim
                        text = element_text(family = "Segoe UI"),
                        legend.position = "bottom",
                        legend.title = element_blank())+
-                 facet_wrap(vars(Geography), scales = "free"),
+                 facet_wrap(vars(Geography), scales = "free", ncol=2) +
+                 theme(panel.spacing.y = unit(4, "lines")),
                tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.25))
 
   return(g)

@@ -72,17 +72,17 @@ i {
 }
 
 .datatables {
-  font-size: 12pt; 
+  font-size: 10pt; 
 }
 
 nav {
-  font-size: 20pt;
+  font-size: 12pt;
   background-color: white;
   text-align: center;
-  width: 50%;
+  width: 100%;
   margin: auto;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   
 }
 
