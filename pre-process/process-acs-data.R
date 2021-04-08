@@ -57,6 +57,24 @@ home.ownership <- home.ownership %>%
   mutate(label = gsub("One race --!!","",label)) %>%
   separate(label, c("ACS_category","ACS_race"), "!!")
 
+# Create Lookups for variables
+tbl.lookup <- home.ownership %>%
+  filter(NAME=="King County") %>%
+  select(ACS_Code, ACS_Variable,ACS_category,ACS_race,concept)
+
+# Get a region total
+region <- home.ownership %>%
+  filter(ACS_Geography=="County") %>%
+  select(ACS_Code, ACS_Variable, estimate, moe) %>%
+  group_by(ACS_Code, ACS_Variable) %>%
+  summarize(sumest = sum(estimate), summoe = moe_sum(moe, estimate)) %>%
+  rename(estimate=sumest, moe=summoe) %>%
+  mutate(GEOID="53033035053061", NAME="Region",ACS_Table=ownership, ACS_Year=yr, ACS_Type=acs, ACS_Geography="Region")
+
+# Add region totals to final
+region <- inner_join(region, tbl.lookup, by=c("ACS_Code", "ACS_Variable"))
+home.ownership <- bind_rows(list(home.ownership, region))  
+
 # Get totals by racial category
 totals <- home.ownership %>%
   filter(ACS_Code=="C01") %>%
@@ -68,7 +86,7 @@ home.ownership <- inner_join(home.ownership, totals, by=c("NAME","ACS_Variable")
   mutate(share=estimate/total)
 
 # Remove extra tables from memory
-rm(county.tbl, msa.tbl, tract.tbl, totals, variable.labels)
+rm(county.tbl, msa.tbl, tract.tbl, totals, variable.labels, region, tbl.lookup)
 
 # Census Data for Educational Attainment (Table S1501) ----------------------------
 educational.attainment <- NULL
@@ -109,6 +127,24 @@ educational.attainment <- educational.attainment %>%
   separate(label, c("ACS_race", "ACS_category"), "!!") %>%
   mutate(ACS_category = replace(ACS_category,is.na(ACS_category),"Total"))
 
+# Create Lookups for variables
+tbl.lookup <- educational.attainment %>%
+  filter(NAME=="King County") %>%
+  select(ACS_Code, ACS_Variable,ACS_category,ACS_race,concept)
+
+# Get a region total
+region <- educational.attainment %>%
+  filter(ACS_Geography=="County") %>%
+  select(ACS_Code, ACS_Variable, estimate, moe) %>%
+  group_by(ACS_Code, ACS_Variable) %>%
+  summarize(sumest = sum(estimate), summoe = moe_sum(moe, estimate)) %>%
+  rename(estimate=sumest, moe=summoe) %>%
+  mutate(GEOID="53033035053061", NAME="Region",ACS_Table=ownership, ACS_Year=yr, ACS_Type=acs, ACS_Geography="Region")
+
+# Add region totals to final
+region <- inner_join(region, tbl.lookup, by=c("ACS_Code", "ACS_Variable"))
+educational.attainment <- bind_rows(list(educational.attainment, region)) 
+
 # Get totals by racial category
 totals <- educational.attainment %>%
   filter(ACS_category=="Total") %>%
@@ -120,7 +156,7 @@ educational.attainment <- inner_join(educational.attainment, totals, by=c("NAME"
   mutate(share=estimate/total)
 
 # Remove extra tables from memory
-rm(county.tbl, msa.tbl, tract.tbl, totals, variable.labels)
+rm(county.tbl, msa.tbl, tract.tbl, totals, variable.labels, region, tbl.lookup)
 
 # Census Data for Median Income (Table S1903) ----------------------------
 median.income <- NULL
