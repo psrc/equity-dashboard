@@ -19,44 +19,44 @@ library(DT)
 
 setwd("C:/projects/equity-dashboard/shiny")
 
-median.income <- as_tibble(fread("data/median_hh_income.csv"))
+census.data <- as_tibble(fread("data/equity-dashboard-census-data.csv"))
 
-data.years <- median.income %>% select(Year) %>% pull() %>% unique()
+data.years <- census.data %>% select(ACS_Year) %>% pull() %>% unique()
+latest.yr <- max(data.years)
 
 psrc.colors <- list("Black or African American" = "#AD5CAB",
-                    "American Indian/Alaska Native" = "#C388C2",
+                    "American Indian and Alaska Native" = "#C388C2",
                     "Asian" = "#E3C9E3",
-                    "Native Hawaiian/Other Pacific Islander" = "#F4835E",
+                    "Native Hawaiian and Other Pacific Islander" = "#F4835E",
                     "Some other race" = "#F7A489",
                     "Two or more races" = "#FBD6C9",
                     "White" = "#A9D46E",
-                    "Hispanic or Latino" = "#C0E095",
+                    "Hispanic or Latino Origin" = "#C0E095",
                     "White, not Hispanic or Latino" = "#E2F1CF",
                     "All households" = "#BCBEC0")
 
 # Functions --------------------------------------------------------
 
-create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estimate", s.type, y.limit, w.label, w.dec, w.pre="", w.suff="", w.fact=1.0) {
+create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimate", y.limit, w.label, w.dec, w.pre="", w.suff="", w.fact=1.0, c.name, c.facet=2) {
 
   # Filter Data
   tbl <- data %>%
-    filter(Type == g.type & Year == yr & Estimate_Type == e.type & Share_Type == s.type) 
+    filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
+    select(NAME, .data[[e.type]], ACS_category, ACS_race) %>%
+    filter(ACS_race!="All")
 
-  tbl$Household_Race <- factor(tbl$Household_Race, levels=c("All households", 
-                                                            "Black or African American", 
-                                                            "American Indian/Alaska Native", 
-                                                            "Asian", 
-                                                            "Native Hawaiian/Other Pacific Islander",
-                                                            "Some other race", "Two or more races",
-                                                            "Hispanic or Latino", "White", "White, not Hispanic or Latino"))
-  tbl <- tbl %>% filter(Household_Race != "All households")
-  
-  # Create Bar Chart
+  tbl$ACS_race <- factor(tbl$ACS_race, levels=c("Black or African American", 
+                                              "American Indian and Alaska Native", 
+                                              "Asian", 
+                                              "Native Hawaiian and Other Pacific Islander",
+                                              "Some other race", "Two or more races",
+                                              "Hispanic or Latino Origin", "White", "White, not Hispanic or Latino"))
+
   g <-  ggplotly(ggplot(data = tbl,
-                      aes(x = Household_Race, 
-                          y = Estimate, 
-                          fill = Household_Race,
-                          text = paste0("<b>", Household_Race, ": ",w.pre,"</b>", prettyNum(round(Estimate*w.fact, w.dec), big.mark = ","), w.suff,"<br>"))) +
+                      aes(x = ACS_race, 
+                          y = get(eval(e.type)), 
+                          fill = ACS_race,
+                          text = paste0("<b>", ACS_race, ": ",w.pre,"</b>", prettyNum(round(get(eval(e.type))*w.fact, w.dec), big.mark = ","), w.suff,"<br>"))) +
                  geom_col(
                    color = "black",
                    alpha = 1.0,
@@ -76,11 +76,12 @@ create.bar.chart.facet <- function(data=median.income, yr, g.type, e.type="Estim
                        text = element_text(family = "Segoe UI"),
                        legend.position = "bottom",
                        legend.title = element_blank())+
-                 facet_wrap(vars(Geography), scales = "free", ncol=2) +
+                 facet_wrap(vars(NAME), scales = "free", ncol=c.facet) +
                  theme(panel.spacing.y = unit(4, "lines")),
                tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.25))
-
+  
   return(g)
+  
 }
 
 create.msa.income.tbl <- function(data=median.income, g.type="MSA", yr) {
@@ -174,4 +175,5 @@ create.msa.income.tbl <- function(data=median.income, g.type="MSA", yr) {
   
   return(t)
 }
+
 

@@ -214,4 +214,16 @@ rm(county.tbl, msa.tbl, tract.tbl, totals, variable.labels)
 
 # Output Data -------------------------------------------------------------
 census.tbls <- bind_rows(list(home.ownership,educational.attainment,median.income))
+
+# Ensure that the racial category descriptions are consistent
+census.tbls <- census.tbls %>%
+  mutate(ACS_race = gsub("White alone", "White", ACS_race)) %>%
+  mutate(ACS_race = gsub("Asian alone", "Asian", ACS_race)) %>%
+  mutate(ACS_race = gsub("Black alone", "Black or African American", ACS_race)) %>%
+  mutate(ACS_race = gsub("American Indian or Alaska Native alone", "American Indian and Alaska Native", ACS_race)) %>%
+  mutate(ACS_race = gsub("Native Hawaiian and Other Pacific Islander alone", "Native Hawaiian and Other Pacific Islander", ACS_race)) %>%
+  mutate(ACS_race = gsub("Some other race alone", "Some other race", ACS_race)) %>%
+  mutate(ACS_race = gsub("Hispanic or Latino origin", "Hispanic or Latino Origin", ACS_race)) %>%
+  mutate(ACS_race = gsub("Hispanic or Latino Origin \\(of any race\\)", "Hispanic or Latino Origin", ACS_race))
+
 fwrite(census.tbls, "shiny/data/equity-dashboard-census-data.csv")
