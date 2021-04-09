@@ -16,8 +16,8 @@ library(plotly)
 library(DT)
 
 # Inputs ---------------------------------------------------------------
-setwd("C:/projects/equity-dashboard/shiny")
-#setwd("/home/shiny/apps/equity-dashboard/shiny")
+#setwd("C:/projects/equity-dashboard/shiny")
+setwd("/home/shiny/apps/equity-dashboard/shiny")
 
 census.data <- as_tibble(fread("data/equity-dashboard-census-data.csv"))
 
