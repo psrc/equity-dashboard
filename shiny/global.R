@@ -16,8 +16,8 @@ library(plotly)
 library(DT)
 
 # Inputs ---------------------------------------------------------------
-#setwd("C:/projects/equity-dashboard/shiny")
-setwd("/home/shiny/apps/equity-dashboard/shiny")
+setwd("C:/projects/equity-dashboard/shiny")
+#setwd("/home/shiny/apps/equity-dashboard/shiny")
 
 census.data <- as_tibble(fread("data/equity-dashboard-census-data.csv"))
 
@@ -35,8 +35,12 @@ psrc.colors <- list("Black or African American" = "#AD5CAB",
                     "White, not Hispanic or Latino" = "#E2F1CF",
                     "All households" = "#BCBEC0")
 
-inc.num_cols <- c("estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
-inc.per_cols <- c("share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
+# Column definitions for Median Income Income 
+med.inc.msa.tot.cols <- c("estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
+med.inc.msa.shr.cols <- c("share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
+
+med.inc.county.tot.cols <- c("estimate_King County", "moe_King County", "estimate_Kitsap County", "moe_Kitsap County", "estimate_Pierce County", "moe_Pierce County", "estimate_Snohomish County", "moe_Snohomish County")
+med.inc.county.shr.cols <- c("share_King County", "share_moe_King County", "share_Kitsap County", "share_moe_Kitsap County", "share_Pierce County", "share_moe_Pierce County", "share_Snohomish County", "share_moe_Snohomish County")
 
 # Table Containers --------------------------------------------------------
 msa.income.container = htmltools::withTags(table(
@@ -55,6 +59,30 @@ msa.income.container = htmltools::withTags(table(
     ),
     tr(
       lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
+    )
+  )
+))
+
+county.income.container = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(class = 'dt-center', rowspan = 3, 'Race'),
+      th(class = 'dt-center', colspan = 8, 'Median Household Income'),
+      th(class = 'dt-center', colspan = 8, 'Percentage of Regional Median Household Income')
+    ),
+    tr(
+      th(class = 'dt-center', colspan = 2, 'King County'),
+      th(class = 'dt-center', colspan = 2, 'Kitsap County'),
+      th(class = 'dt-center', colspan = 2, 'Pierce County'),
+      th(class = 'dt-center', colspan = 2, 'Snohomish County'),
+      th(class = 'dt-center', colspan = 2, 'King County'),
+      th(class = 'dt-center', colspan = 2, 'Kitsap County'),
+      th(class = 'dt-center', colspan = 2, 'Pierce County'),
+      th(class = 'dt-center', colspan = 2, 'Snohomish County')
+    ),
+    tr(
+      lapply(rep(c('Estimate', 'MoE'), 8), th, class = 'dt-center')
     )
   )
 ))
@@ -107,7 +135,7 @@ create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimat
   
 }
 
-create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.container, num.cols, per.cols) {
+create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.container, t.cols, s.cols) {
 
   tot.tbl <- data %>%
     filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
@@ -117,8 +145,7 @@ create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.c
   # Transform to Wide Format for table creation
   tot.tbl <- tot.tbl %>%
     pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(estimate,moe))
-
-  f.cols <- c("ACS_race", "estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
+  f.cols <- c("ACS_race", t.cols)
   tot.tbl <- tot.tbl[,f.cols]
 
   shr.tbl <- data %>%
@@ -130,22 +157,20 @@ create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.c
   # Transform to Wide Format for table creation
   shr.tbl <- shr.tbl %>%
     pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(share, share_moe))
-  
-  f.cols <- c("ACS_race", "share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
+  f.cols <- c("ACS_race", s.cols)
   shr.tbl <- shr.tbl[,f.cols]
 
   c.tbl <- inner_join(tot.tbl, shr.tbl, by=c("ACS_race"))
 
   t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:8))))
 
-  for (working_column in num.cols) {
+  for (working_column in t.cols) {
     t <- t %>% formatCurrency(working_column, "$", digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
   }
 
-  for (working_column in per.cols) {
+  for (working_column in s.cols) {
     t <- t %>% formatPercentage(working_column,0) %>% formatStyle(working_column,`text-align` = 'center')
   }
   
   return(t)
 }
-
