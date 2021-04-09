@@ -39,12 +39,9 @@ i {
   padding-right: 25px;
 }
 
-#sidebar {
-  background-color: white;
-}
-
 #mainpanel {
   background-color: white;
+  padding-left: 10px;
 }
 
 .source_url {
@@ -97,3 +94,7 @@ nav {
 .fa:hover {color: #91268F;}
 
 .navbar-default .navbar-nav > .active > a:focus {background-color: #E3C9E3;}
+
+#sidebar {
+    background-color: #F8F8F8;
+}
