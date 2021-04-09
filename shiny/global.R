@@ -24,6 +24,8 @@ census.data <- as_tibble(fread("data/equity-dashboard-census-data.csv"))
 data.years <- census.data %>% select(ACS_Year) %>% pull() %>% unique()
 latest.yr <- max(data.years)
 
+chart_value_types <- c("Total", "Share")
+
 psrc.colors <- list("Black or African American" = "#AD5CAB",
                     "American Indian and Alaska Native" = "#C388C2",
                     "Asian" = "#E3C9E3",
@@ -48,17 +50,14 @@ msa.income.container = htmltools::withTags(table(
   thead(
     tr(
       th(class = 'dt-center', rowspan = 3, 'Race'),
-      th(class = 'dt-center', colspan = 4, 'Median Household Income'),
-      th(class = 'dt-center', colspan = 4, 'Percentage of Regional Median Household Income')
+      th(class = 'dt-center', colspan = 4, 'Median Household Income')
     ),
     tr(
-      th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
-      th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard'),
       th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
       th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard')
     ),
     tr(
-      lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
+      lapply(rep(c('Estimate', 'MoE'), 2), th, class = 'dt-center')
     )
   )
 ))
@@ -68,21 +67,16 @@ county.income.container = htmltools::withTags(table(
   thead(
     tr(
       th(class = 'dt-center', rowspan = 3, 'Race'),
-      th(class = 'dt-center', colspan = 8, 'Median Household Income'),
-      th(class = 'dt-center', colspan = 8, 'Percentage of Regional Median Household Income')
+      th(class = 'dt-center', colspan = 8, 'Median Household Income')
     ),
     tr(
-      th(class = 'dt-center', colspan = 2, 'King County'),
-      th(class = 'dt-center', colspan = 2, 'Kitsap County'),
-      th(class = 'dt-center', colspan = 2, 'Pierce County'),
-      th(class = 'dt-center', colspan = 2, 'Snohomish County'),
       th(class = 'dt-center', colspan = 2, 'King County'),
       th(class = 'dt-center', colspan = 2, 'Kitsap County'),
       th(class = 'dt-center', colspan = 2, 'Pierce County'),
       th(class = 'dt-center', colspan = 2, 'Snohomish County')
     ),
     tr(
-      lapply(rep(c('Estimate', 'MoE'), 8), th, class = 'dt-center')
+      lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
     )
   )
 ))
@@ -135,42 +129,43 @@ create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimat
   
 }
 
-create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.container, t.cols, s.cols) {
+create.clean.tbl <- function(data=census.data, g.type, e.type, yr=latest.yr, c.name, t.container, t.cols, s.cols) {
 
-  tot.tbl <- data %>%
-    filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
-    filter(ACS_race!="All") %>%
-    select(NAME, ACS_race, estimate, moe)
+  # Do this if user selects Total for type of output
+  if (e.type=="Total") {
+    c.tbl <- data %>%
+      filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
+      filter(ACS_race!="All") %>%
+      select(NAME, ACS_race, estimate, moe)
+    
+    c.tbl <- c.tbl %>%
+      pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(estimate,moe))
+    f.cols <- c("ACS_race", t.cols)
+    c.tbl <- c.tbl[,f.cols]
+    num.cols <- length(t.cols)
+    t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:num.cols))))
+    for (working_column in t.cols) {
+      t <- t %>% formatCurrency(working_column, "$", digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
+    } # end of table format loop for totals
 
-  # Transform to Wide Format for table creation
-  tot.tbl <- tot.tbl %>%
-    pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(estimate,moe))
-  f.cols <- c("ACS_race", t.cols)
-  tot.tbl <- tot.tbl[,f.cols]
-
-  shr.tbl <- data %>%
-    filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
-    filter(ACS_race!="All") %>%
-    mutate(share_moe = moe / total) %>%
-    select(NAME, ACS_race, share, share_moe)
+  } else {
+    c.tbl <- data %>%
+      filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
+      filter(ACS_race!="All") %>%
+      mutate(share_moe = moe / total) %>%
+      select(NAME, ACS_race, share, share_moe)
   
-  # Transform to Wide Format for table creation
-  shr.tbl <- shr.tbl %>%
-    pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(share, share_moe))
-  f.cols <- c("ACS_race", s.cols)
-  shr.tbl <- shr.tbl[,f.cols]
-
-  c.tbl <- inner_join(tot.tbl, shr.tbl, by=c("ACS_race"))
-
-  t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:8))))
-
-  for (working_column in t.cols) {
-    t <- t %>% formatCurrency(working_column, "$", digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
-  }
-
-  for (working_column in s.cols) {
-    t <- t %>% formatPercentage(working_column,0) %>% formatStyle(working_column,`text-align` = 'center')
-  }
+    c.tbl <- c.tbl %>%
+      pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(share, share_moe))
+    f.cols <- c("ACS_race", s.cols)
+    c.tbl <- c.tbl[,f.cols]
+    num.cols <- length(s.cols)
+    t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:num.cols))))
+    for (working_column in s.cols) {
+      t <- t %>% formatPercentage(working_column,0) %>% formatStyle(working_column,`text-align` = 'center')
+    } # end of table format loop for shares
   
+  } # end of else condition
+
   return(t)
 }

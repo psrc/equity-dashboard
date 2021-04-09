@@ -1,6 +1,6 @@
 shinyUI(
 navbarPage(title="",
-          windowTitle = "PSRC Equity Dashboard", 
+          windowTitle = "Aplha Testing of PSRC Equity Data", 
           theme = "styles.css",
           position = "fixed-top",
 
@@ -59,6 +59,7 @@ navbarPage(title="",
                        sidebarPanel(id="sidebar",
                                     div(img(src="psrc-logo.png", width = "100%", height = "100%", style = "padding-top: 5px")),
                                     hr(),
+                                    selectInput("IncomeType","Type of Data to display:",chart_value_types),
                                     h3("Equity Resources:"),
                                     hr(),
                                     tags$a(class = "source_url", href="https://www.psrc.org/sites/default/files/demographicprofile.pdf", "Central Puget Sound Demographic Profile", target="_blank"),
