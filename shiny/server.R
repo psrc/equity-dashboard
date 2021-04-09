@@ -25,6 +25,6 @@ shinyServer(function(input, output) {
     
     output$chart_county_income <- renderPlotly({create.bar.chart.facet(yr=latest.yr, g.type=c("County"), e.type=input$IncomeType, c.name="Median income",w.label=scales::dollar_format(),w.pre="$")})
     output$table_county_income <- renderDataTable({create.clean.tbl(yr=latest.yr, g.type=c("County"), c.name="Median income", t.container=create.custom.container("County","Median Income"), t.cols=county.tot.cols, s.cols=county.shr.cols, e.type=input$IncomeType, w.pre="$")})
+
 })    
 
-#data=census.data, yr, g.type, e.type, w.label, w.dec, w.pre="", c.name, c.facet=2

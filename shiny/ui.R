@@ -3,7 +3,7 @@ navbarPage(title="",
           windowTitle = "Alpha Testing of PSRC Equity Data", 
           theme = "styles.css",
           position = "fixed-top",
-          footer = div("Return to Top", style = "position: fixed; bottom: 0; width: 100%; background-color: white; height: 50px; text-align:center; padding-top: 10px;"),
+          footer = div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 0; width: 100%; background-color: white; height: 50px; text-align:center; padding-top: 10px;"),
 
            tabPanel("Overview",
                     sidebarLayout(
