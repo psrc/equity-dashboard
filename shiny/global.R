@@ -16,7 +16,6 @@ library(plotly)
 library(DT)
 
 # Inputs ---------------------------------------------------------------
-
 #setwd("C:/projects/equity-dashboard/shiny")
 setwd("/home/shiny/apps/equity-dashboard/shiny")
 
@@ -36,8 +35,31 @@ psrc.colors <- list("Black or African American" = "#AD5CAB",
                     "White, not Hispanic or Latino" = "#E2F1CF",
                     "All households" = "#BCBEC0")
 
-# Functions --------------------------------------------------------
+inc.num_cols <- c("estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
+inc.per_cols <- c("share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
 
+# Table Containers --------------------------------------------------------
+msa.income.container = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(class = 'dt-center', rowspan = 3, 'Race'),
+      th(class = 'dt-center', colspan = 4, 'Median Household Income'),
+      th(class = 'dt-center', colspan = 4, 'Percentage of Regional Median Household Income')
+    ),
+    tr(
+      th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
+      th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard'),
+      th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
+      th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard')
+    ),
+    tr(
+      lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
+    )
+  )
+))
+
+# Functions --------------------------------------------------------
 create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimate", y.limit, w.label, w.dec, w.pre="", w.suff="", w.fact=1.0, c.name, c.facet=2) {
 
   # Filter Data
@@ -85,96 +107,45 @@ create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimat
   
 }
 
-create.msa.income.tbl <- function(data=median.income, g.type="MSA", yr) {
+create.clean.tbl <- function(data=census.data, g.type, yr=latest.yr, c.name, t.container, num.cols, per.cols) {
 
-  ######################################################################################################
-  ######################################################################################################
-  ### Totals
-  ######################################################################################################
-  ######################################################################################################
-  est.tbl <- data %>%
-    filter(Type == g.type & Year == yr & Share_Type == "Total" & Estimate_Type == "Estimate") %>%
-    select(Geography, Household_Race, Estimate)
-
-  moe.tbl <- data %>%
-    filter(Type == g.type & Year == yr & Share_Type == "Total" & Estimate_Type == "MoE") %>%
-    select(Geography, Household_Race, Estimate) %>%
-    rename(MoE=Estimate)
-
-  tot.tbl <- inner_join(est.tbl,moe.tbl, by = c("Geography", "Household_Race"))
+  tot.tbl <- data %>%
+    filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
+    filter(ACS_race!="All") %>%
+    select(NAME, ACS_race, estimate, moe)
 
   # Transform to Wide Format for table creation
   tot.tbl <- tot.tbl %>%
-    pivot_wider(id_cols=c(Household_Race), names_from=Geography, values_from = c(Estimate,MoE))
+    pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(estimate,moe))
 
-  f.cols <- c("Household_Race", "Estimate_Seattle-Tacoma-Bellevue MSA", "MoE_Seattle-Tacoma-Bellevue MSA", "Estimate_Bremerton-Silverdale-Port Orchard MSA", "MoE_Bremerton-Silverdale-Port Orchard MSA")
+  f.cols <- c("ACS_race", "estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
   tot.tbl <- tot.tbl[,f.cols]
 
-  ######################################################################################################
-  ######################################################################################################
-  ### Shares
-  ######################################################################################################
-  ######################################################################################################
-  est.tbl <- data %>%
-    filter(Type == g.type & Year == yr & Share_Type == "Share" & Estimate_Type == "Estimate") %>%
-    select(Geography, Household_Race, Estimate)
-
-  moe.tbl <- data %>%
-    filter(Type == g.type & Year == yr & Share_Type == "Share" & Estimate_Type == "MoE") %>%
-    select(Geography, Household_Race, Estimate) %>%
-    rename(MoE=Estimate)
-
-  shr.tbl <- inner_join(est.tbl,moe.tbl, by = c("Geography", "Household_Race"))
-
+  shr.tbl <- data %>%
+    filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
+    filter(ACS_race!="All") %>%
+    mutate(share_moe = moe / total) %>%
+    select(NAME, ACS_race, share, share_moe)
+  
   # Transform to Wide Format for table creation
   shr.tbl <- shr.tbl %>%
-    pivot_wider(id_cols=c(Household_Race), names_from=Geography, values_from = c(Estimate,MoE))
-
-  f.cols <- c("Household_Race", "Estimate_Seattle-Tacoma-Bellevue MSA", "MoE_Seattle-Tacoma-Bellevue MSA", "Estimate_Bremerton-Silverdale-Port Orchard MSA", "MoE_Bremerton-Silverdale-Port Orchard MSA")
+    pivot_wider(id_cols=c(ACS_race), names_from=NAME, values_from = c(share, share_moe))
+  
+  f.cols <- c("ACS_race", "share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
   shr.tbl <- shr.tbl[,f.cols]
 
-  c.tbl <- inner_join(tot.tbl, shr.tbl, by=c("Household_Race"))
+  c.tbl <- inner_join(tot.tbl, shr.tbl, by=c("ACS_race"))
 
-  ######################################################################################################
-  ######################################################################################################
-  ### Custom Container
-  ######################################################################################################
-  ######################################################################################################
-  sketch = htmltools::withTags(table(
-    class = 'display',
-    thead(
-      tr(
-        th(class = 'dt-center', rowspan = 3, 'Race'),
-        th(class = 'dt-center', colspan = 4, 'Median Household Income'),
-        th(class = 'dt-center', colspan = 4, 'Percentage of Regional Median Household Income')
-      ),
-      tr(
-        th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
-        th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard'),
-        th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
-        th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard')
-      ),
-      tr(
-        lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
-      )
-    )
-  ))
+  t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:8))))
 
-  # Create Table
-  t <- datatable(c.tbl, container = sketch, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:8))))
-
-  currency_columns <- c("Estimate_Seattle-Tacoma-Bellevue MSA.x", "MoE_Seattle-Tacoma-Bellevue MSA.x", "Estimate_Bremerton-Silverdale-Port Orchard MSA.x", "MoE_Bremerton-Silverdale-Port Orchard MSA.x")
-  percentage_columns <- c("Estimate_Seattle-Tacoma-Bellevue MSA.y", "MoE_Seattle-Tacoma-Bellevue MSA.y", "Estimate_Bremerton-Silverdale-Port Orchard MSA.y", "MoE_Bremerton-Silverdale-Port Orchard MSA.y")
-
-  for (working_column in currency_columns) {
+  for (working_column in num.cols) {
     t <- t %>% formatCurrency(working_column, "$", digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
   }
 
-  for (working_column in percentage_columns) {
+  for (working_column in per.cols) {
     t <- t %>% formatPercentage(working_column,0) %>% formatStyle(working_column,`text-align` = 'center')
   }
   
   return(t)
 }
-
 

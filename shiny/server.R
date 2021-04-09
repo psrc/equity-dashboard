@@ -12,8 +12,8 @@ shinyServer(function(input, output) {
     output$chart_county_education_bs <- renderPlotly({create.bar.chart.facet(yr=latest.yr, g.type=c("County"), e.type="share", y.limit=1, w.label=scales::percent, w.dec=0, w.suff="%", w.fact=100, c.name="Bachelor's degree or higher")})
 
     # Median Income Charts and Tables
-    output$chart_region_income <- renderPlotly({create.bar.chart.facet(yr=latest.yr, g.type=c("MSA"), e.type="estimate", y.limit=120000, w.label=scales::dollar_format(), w.dec=-2, w.pre="$", c.name="Median income")})
+    output$chart_region_income <- renderPlotly({create.bar.chart.facet(yr=latest.yr, g.type=c("MSA"), e.type="estimate", y.limit=120000, w.label=scales::dollar_format(), w.dec=-2, w.pre="$", c.name="Median income", c.facet=2)})
     output$chart_county_income <- renderPlotly({create.bar.chart.facet(yr=latest.yr, g.type=c("County"), e.type="estimate", y.limit=120000, w.label=scales::dollar_format(), w.dec=-2, w.pre="$", c.name="Median income")})
     
-    
+    output$table_region_income <- renderDataTable({create.clean.tbl(yr=latest.yr, g.type=c("MSA"), c.name="Median income", t.container=msa.income.container, num.cols=inc.num_cols, per.cols=inc.per_cols)})
 })    

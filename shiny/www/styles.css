@@ -5,6 +5,7 @@ body {
   font-size: 12pt;
   color: black;
   background-color: #F8F8F8;
+  padding-top: 70px;
 }
 
 h1 {
@@ -83,11 +84,10 @@ nav {
   margin: auto;
   padding-top: 5px;
   padding-bottom: 5px;
-  
 }
 
 .navbar {
-  background-color: transparent;
+  background-color: white;
 }
 
 .col-sm-3 {
