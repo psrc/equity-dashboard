@@ -82,12 +82,29 @@ county.income.container = htmltools::withTags(table(
 ))
 
 # Functions --------------------------------------------------------
-create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimate", y.limit, w.label, w.dec, w.pre="", w.suff="", w.fact=1.0, c.name, c.facet=2) {
+create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type, c.name, c.facet=2, w.label=scales::comma, w.pre="") {
 
+  if (e.type == "Total") {
+    
+    est.value <- "estimate"
+    w.suff <- ""
+    w.fact <- 1.0
+    w.dec <- -2
+
+  } else {
+    
+    est.value <- "share"
+    w.suff <- "%"
+    w.fact <- 100
+    w.label <- scales::percent
+    w.dec <- 0
+    w.pre <- ""
+  }
+  
   # Filter Data
   tbl <- data %>%
     filter(ACS_Geography %in% g.type & ACS_Year == yr & ACS_category == c.name) %>%
-    select(NAME, .data[[e.type]], ACS_category, ACS_race) %>%
+    select(NAME, .data[[est.value]], ACS_category, ACS_race) %>%
     filter(ACS_race!="All")
 
   tbl$ACS_race <- factor(tbl$ACS_race, levels=c("Black or African American", 
@@ -99,15 +116,15 @@ create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type="estimat
 
   g <-  ggplotly(ggplot(data = tbl,
                       aes(x = ACS_race, 
-                          y = get(eval(e.type)), 
+                          y = get(eval(est.value)), 
                           fill = ACS_race,
-                          text = paste0("<b>", ACS_race, ": ",w.pre,"</b>", prettyNum(round(get(eval(e.type))*w.fact, w.dec), big.mark = ","), w.suff,"<br>"))) +
+                          text = paste0("<b>", ACS_race, ": ",w.pre,"</b>", prettyNum(round(get(eval(est.value))*w.fact, w.dec), big.mark = ","), w.suff,"<br>"))) +
                  geom_col(
                    color = "black",
                    alpha = 1.0,
                    position = "dodge") +
                  labs(x = NULL, y = NULL) +
-                 scale_y_continuous(labels = w.label, limits=c(0,y.limit)) +
+                 scale_y_continuous(labels = w.label) +
                  scale_fill_manual(values= psrc.colors) +
                  theme(plot.title = element_text(size = 10, face = 'bold'),
                        axis.text.x = element_blank(),
