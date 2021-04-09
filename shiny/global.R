@@ -37,51 +37,85 @@ psrc.colors <- list("Black or African American" = "#AD5CAB",
                     "White, not Hispanic or Latino" = "#E2F1CF",
                     "All households" = "#BCBEC0")
 
-# Column definitions for Median Income Income 
-med.inc.msa.tot.cols <- c("estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
-med.inc.msa.shr.cols <- c("share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
+# Column definitions Geographies from ACS data
+msa.tot.cols <- c("estimate_Seattle-Tacoma-Bellevue", "moe_Seattle-Tacoma-Bellevue", "estimate_Bremerton-Silverdale-Port Orchard", "moe_Bremerton-Silverdale-Port Orchard")
+msa.shr.cols <- c("share_Seattle-Tacoma-Bellevue", "share_moe_Seattle-Tacoma-Bellevue", "share_Bremerton-Silverdale-Port Orchard", "share_moe_Bremerton-Silverdale-Port Orchard")
 
-med.inc.county.tot.cols <- c("estimate_King County", "moe_King County", "estimate_Kitsap County", "moe_Kitsap County", "estimate_Pierce County", "moe_Pierce County", "estimate_Snohomish County", "moe_Snohomish County")
-med.inc.county.shr.cols <- c("share_King County", "share_moe_King County", "share_Kitsap County", "share_moe_Kitsap County", "share_Pierce County", "share_moe_Pierce County", "share_Snohomish County", "share_moe_Snohomish County")
+county.tot.cols <- c("estimate_King County", "moe_King County", "estimate_Kitsap County", "moe_Kitsap County", "estimate_Pierce County", "moe_Pierce County", "estimate_Snohomish County", "moe_Snohomish County")
+county.shr.cols <- c("share_King County", "share_moe_King County", "share_Kitsap County", "share_moe_Kitsap County", "share_Pierce County", "share_moe_Pierce County", "share_Snohomish County", "share_moe_Snohomish County")
 
-# Table Containers --------------------------------------------------------
-msa.income.container = htmltools::withTags(table(
-  class = 'display',
-  thead(
-    tr(
-      th(class = 'dt-center', rowspan = 3, 'Race'),
-      th(class = 'dt-center', colspan = 4, 'Median Household Income')
-    ),
-    tr(
-      th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
-      th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard')
-    ),
-    tr(
-      lapply(rep(c('Estimate', 'MoE'), 2), th, class = 'dt-center')
-    )
-  )
-))
+region.tot.cols <- c("estimate_Region", "moe_Region")
+region.shr.cols <- c("share_Region", "share_moe_Region")
 
-county.income.container = htmltools::withTags(table(
-  class = 'display',
-  thead(
-    tr(
-      th(class = 'dt-center', rowspan = 3, 'Race'),
-      th(class = 'dt-center', colspan = 8, 'Median Household Income')
-    ),
-    tr(
-      th(class = 'dt-center', colspan = 2, 'King County'),
-      th(class = 'dt-center', colspan = 2, 'Kitsap County'),
-      th(class = 'dt-center', colspan = 2, 'Pierce County'),
-      th(class = 'dt-center', colspan = 2, 'Snohomish County')
-    ),
-    tr(
-      lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
-    )
-  )
-))
 
 # Functions --------------------------------------------------------
+create.custom.container <- function(g.type, c.name) {
+  
+  if (g.type=="MSA") {
+    c = htmltools::withTags(table(
+      class = 'display',
+      thead(
+        tr(
+          th(class = 'dt-center', rowspan = 3, 'Race'),
+          th(class = 'dt-center', colspan = 4, c.name)
+        ),
+        tr(
+          th(class = 'dt-center', colspan = 2, 'Seattle-Tacoma-Bellevue'),
+          th(class = 'dt-center', colspan = 2, 'Bremerton-Silverdale-Port Orchard')
+        ),
+        tr(
+          lapply(rep(c('Estimate', 'MoE'), 2), th, class = 'dt-center')
+        )
+      )
+    ))
+  } # end of msa container if
+
+  if (g.type=="Region") {
+    c = htmltools::withTags(table(
+      class = 'display',
+      thead(
+        tr(
+          th(class = 'dt-center', rowspan = 3, 'Race'),
+          th(class = 'dt-center', colspan = 2, c.name)
+        ),
+        tr(
+          th(class = 'dt-center', colspan = 2, 'Region')
+        ),
+        tr(
+          lapply(rep(c('Estimate', 'MoE'), 1), th, class = 'dt-center')
+        )
+      )
+    ))
+    
+  } # end of region container if 
+  
+  if (g.type=="County") {
+  
+    c = htmltools::withTags(table(
+      class = 'display',
+      thead(
+        tr(
+          th(class = 'dt-center', rowspan = 3, 'Race'),
+          th(class = 'dt-center', colspan = 8, c.name)
+        ),
+        tr(
+          th(class = 'dt-center', colspan = 2, 'King County'),
+          th(class = 'dt-center', colspan = 2, 'Kitsap County'),
+          th(class = 'dt-center', colspan = 2, 'Pierce County'),
+          th(class = 'dt-center', colspan = 2, 'Snohomish County')
+        ),
+        tr(
+          lapply(rep(c('Estimate', 'MoE'), 4), th, class = 'dt-center')
+        )
+      )
+    ))
+    
+  } # end of county container if
+  
+  return(c)
+  
+}
+
 create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type, c.name, c.facet=2, w.label=scales::comma, w.pre="") {
 
   if (e.type == "Total") {
@@ -146,7 +180,7 @@ create.bar.chart.facet <- function(data=census.data, yr, g.type, e.type, c.name,
   
 }
 
-create.clean.tbl <- function(data=census.data, g.type, e.type, yr=latest.yr, c.name, t.container, t.cols, s.cols) {
+create.clean.tbl <- function(data=census.data, g.type, e.type, yr=latest.yr, c.name, t.container, t.cols, s.cols, w.pre="") {
 
   # Do this if user selects Total for type of output
   if (e.type=="Total") {
@@ -162,7 +196,7 @@ create.clean.tbl <- function(data=census.data, g.type, e.type, yr=latest.yr, c.n
     num.cols <- length(t.cols)
     t <- datatable(c.tbl, container = t.container, rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets =1:num.cols))))
     for (working_column in t.cols) {
-      t <- t %>% formatCurrency(working_column, "$", digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
+      t <- t %>% formatCurrency(working_column, w.pre, digits = 0) %>% formatStyle(working_column,`text-align` = 'center')
     } # end of table format loop for totals
 
   } else {
