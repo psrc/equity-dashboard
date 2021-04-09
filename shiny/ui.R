@@ -3,6 +3,7 @@ navbarPage(title="",
           windowTitle = "Alpha Testing of PSRC Equity Data", 
           theme = "styles.css",
           position = "fixed-top",
+          footer = div("Return to Top", style = "position: fixed; bottom: 0; width: 100%; background-color: white; height: 50px; text-align:center; padding-top: 10px;"),
 
            tabPanel("Overview",
                     sidebarLayout(
@@ -49,6 +50,7 @@ navbarPage(title="",
                         "The work plan is anticipated to be finalized in spring 2021, for the next budget and work program. Initial phases of the strategy will be finalized in 2022. This work will be ongoing.",
                         hr(),
                         div(img(src="equity-strategy-timeline.jpg", width = "100%", height = "100%", style = "padding-top: 5px")),
+                        hr(), br(), br(),
                       ) # End of Overview Panel
                     ) # End of Sidebar of Unemployment
            ),# End of Tab Panel of Overview Panel
