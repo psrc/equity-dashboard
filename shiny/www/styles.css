@@ -97,4 +97,9 @@ nav {
 
 #sidebar {
     background-color: white;
+    position: fixed;
+    width: 16%;
+    overflow-y: scroll;
+    top: 70px;
+    bottom: 0;
 }
