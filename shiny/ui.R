@@ -3,7 +3,6 @@ navbarPage(title="",
           windowTitle = "Alpha Testing of PSRC Equity Data", 
           theme = "styles.css",
           position = "fixed-top",
-          footer = div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 0; width: 100%; background-color: white; height: 35px; text-align:center; padding-top: 10px;"),
 
            tabPanel("Overview",
                     sidebarLayout(
@@ -51,7 +50,8 @@ navbarPage(title="",
                         "The work plan is anticipated to be finalized in spring 2021, for the next budget and work program. Initial phases of the strategy will be finalized in 2022. This work will be ongoing.",
                         hr(),
                         div(img(src="equity-strategy-timeline.jpg", width = "100%", height = "100%", style = "padding-top: 5px")),
-                        hr(), br(), br(),
+                        hr(),
+                        div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 5px; right: 10px; width: 50px; text-align:center"),
                       ) # End of Overview Panel
                     ) # End of Sidebar of Unemployment
            ),# End of Tab Panel of Overview Panel
@@ -104,7 +104,8 @@ navbarPage(title="",
                         fluidRow(column(12,h3("Median Household Income by Race"))),
                         fluidRow(column(12,plotlyOutput("chart_county_income"))),
                         fluidRow(br(),column(12, dataTableOutput("table_county_income"))),
-                        br(),
+                        hr(),
+                        div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 5px; right: 10px; width: 50px; text-align:center"),
                         
                       ) # End of Main Panel of Median Income
                     ) # End of Sidebar of Median Income
@@ -169,6 +170,7 @@ navbarPage(title="",
                                 fluidRow(column(12,plotlyOutput("chart_county_education_bs"))),
                                 fluidRow(br(),column(12, dataTableOutput("table_county_education_bs"))),
                                 hr(),
+                                div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 5px; right: 10px; width: 50px; text-align:center"),
                                 
                       ) # End of Main Panel of Educational Attainment
                     ) # End of Sidebar of Educational Attainment
@@ -221,6 +223,7 @@ navbarPage(title="",
                                 fluidRow(column(12,plotlyOutput("chart_county_homeownership"))),
                                 fluidRow(br(),column(12, dataTableOutput("table_county_homeownership"))),
                                 hr(),
+                                div(actionLink("returntop", "Return to Top", onclick ="window.scrollTo(0, 0)"), style = "position: fixed; bottom: 5px; right: 10px; width: 50px; text-align:center"),
                       ) # End of Main Panel of Home Ownership
                     ) # End of Sidebar of Home Ownership
            )# End of Tab Panel of Home Ownership          
