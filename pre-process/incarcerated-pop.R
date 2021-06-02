@@ -5,7 +5,7 @@ Sys.getenv("CENSUS_API_KEY")
 
 
 get_decennial_county <- function(counties, table_code, year) {
-  # retrieve sf1 2010 data for
+  # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   
   get_decennial_counties <- partial(get_decennial,
