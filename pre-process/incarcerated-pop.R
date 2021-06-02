@@ -53,7 +53,7 @@ get_decennial_county <- function(counties, table_code, year) {
 # geographies
 counties <- c('King', 'Kitsap', 'Pierce', 'Snohomish')
 
-# tables
+# tables (Group Quarters Population by Group Quarters Type, Races A-F)
 tbl_names <- paste0('PCT020', LETTERS[1:6])
 
 # tt2 <- get_decennial_county("King", "PCT021", 2010)
