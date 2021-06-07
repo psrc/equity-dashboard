@@ -20,10 +20,10 @@ get_decennial_recs <- function(geography = c('tract', 'county'), counties, table
     
     table <- table_code
     
-    all_counties <- map(counties, ~get_decennial_geogs(county = .x))
+    all_geogs <- map(counties, ~get_decennial_geogs(county = .x))
     
     # append via recursion, add labels
-    dfs <- reduce(all_counties, bind_rows)
+    dfs <- reduce(all_geogs, bind_rows)
     
   } else if(length(table_code) > 1) {
     
@@ -60,10 +60,7 @@ counties <- c('King', 'Kitsap', 'Pierce', 'Snohomish')
 # tables (Group Quarters Population by Group Quarters Type, Races A-F)
 tbl_names <- paste0('PCT020', LETTERS[1:6])
 
-# tt2a <- get_decennial_county("King", "PCT021", 2010)
 # tt2 <- get_decennial_recs(geography = 'county', "King", "PCT021", 2010)
-# tt3 <- get_decennial_county(counties, "PCT020A", 2010)
-# tt <- get_decennial_county(counties, tbl_names, 2010)
 # tt4 <- get_decennial_tracts(counties, tbl_names, 2010)
 # tt5 <- get_decennial_recs(geography = 'tract', counties, tbl_names, 2010)
 # tt6 <- get_decennial_recs(geography = 'county', counties, tbl_names, 2010)
