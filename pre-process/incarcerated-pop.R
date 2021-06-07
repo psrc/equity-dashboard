@@ -4,12 +4,13 @@ library(tidyverse)
 Sys.getenv("CENSUS_API_KEY")
 
 
-get_decennial_recs <- function(geography = c('tract', 'county'), counties, table_code, year) {
+get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce', 'Snohomish'), table_code, year) {
   ## get_decennial_recs ----
   
   # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   # single table or a vector of tables by tracts in a county or a vector of counties
+  # geography arguments = 'tract' or 'county'
   
   get_decennial_geogs <- partial(get_decennial,
                                  geography = geography,
@@ -61,9 +62,9 @@ counties <- c('King', 'Kitsap', 'Pierce', 'Snohomish')
 tbl_names <- paste0('PCT020', LETTERS[1:6])
 
 # tt2 <- get_decennial_recs(geography = 'county', "King", "PCT021", 2010)
-# tt4 <- get_decennial_tracts(counties, tbl_names, 2010)
 # tt5 <- get_decennial_recs(geography = 'tract', counties, tbl_names, 2010)
 # tt6 <- get_decennial_recs(geography = 'county', counties, tbl_names, 2010)
+tt6a <- get_decennial_recs(geography = 'county', table_code = tbl_names, year = 2010)
 
 # get_decennial( geography = 'county',
 #                state = 'WA',
