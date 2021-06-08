@@ -10,34 +10,53 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
   # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   # single table or a vector of tables by tracts in a county or a vector of counties
-  # geography arguments = 'tract' or 'county'
+  # geography arguments = 'tract', 'county', 'place'
   
-  get_decennial_geogs <- partial(get_decennial,
-                                 geography = geography,
-                                 state = 'WA',
-                                 table = table)
+  dfs <- NULL
   
-  if(length(table_code) == 1) {
+  if(geography %in% c('tract', 'county')) {
     
-    table <- table_code
+    get_decennial_geogs <- partial(get_decennial,
+                                   geography = geography,
+                                   state = 'WA',
+                                   table = table)
     
-    all_geogs <- map(counties, ~get_decennial_geogs(county = .x))
-    
-    # append via recursion, add labels
-    dfs <- reduce(all_geogs, bind_rows)
-    
-  } else if(length(table_code) > 1) {
-    
-    # loop through tables, map county/counties for every table
-    dfs <- NULL
-    
-    for(table in table_code) {
+    if(length(table_code) == 1) {
+      
+      table <- table_code
       
       all_geogs <- map(counties, ~get_decennial_geogs(county = .x))
       
-      # append via recursion
-      df <- reduce(all_geogs, bind_rows)
-      ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
+      # append via recursion, add labels
+      dfs <- reduce(all_geogs, bind_rows)
+      
+    } else if(length(table_code) > 1) {
+      
+      # loop through tables, map county/counties for every table
+      for(table in table_code) {
+        
+        all_geogs <- map(counties, ~get_decennial_geogs(county = .x))
+        
+        # append via recursion
+        df <- reduce(all_geogs, bind_rows)
+        ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
+      }
+      
+    }
+    
+  } else { # e.g. place
+    
+    if(length(table_code) == 1) {
+      
+      dfs <- get_decennial(geography = geography,
+                           state = 'WA',
+                           table = table_code)
+      
+    } else if (length(table_code) > 1) {
+      
+      for(table in table_code) {
+        ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
+      }
     }
     
   }
@@ -64,10 +83,6 @@ tbl_names <- paste0('PCT020', LETTERS[1:6])
 # tt2 <- get_decennial_recs(geography = 'county', "King", "PCT021", 2010)
 # tt5 <- get_decennial_recs(geography = 'tract', counties, tbl_names, 2010)
 # tt6 <- get_decennial_recs(geography = 'county', counties, tbl_names, 2010)
-tt6a <- get_decennial_recs(geography = 'county', table_code = tbl_names, year = 2010)
+# tt6a <- get_decennial_recs(geography = 'county', table_code = tbl_names, year = 2010)
+# tt7 <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010)
 
-# get_decennial( geography = 'county',
-#                state = 'WA',
-#                # table = "PCT021",
-#                variables = "PCT021001",
-#                county = 'King')
