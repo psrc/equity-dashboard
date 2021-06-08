@@ -24,7 +24,6 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
     if(length(table_code) == 1) {
       
       table <- table_code
-      
       all_geogs <- map(counties, ~get_decennial_geogs(county = .x))
       
       # append via recursion, add labels
@@ -44,21 +43,34 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
       
     }
     
-  } else { # e.g. place
+  } else { # e.g. place, msa
+    
+    msa_geog <- 'metropolitan statistical area/micropolitan statistical area'
     
     if(length(table_code) == 1) {
       
-      dfs <- get_decennial(geography = geography,
-                           state = 'WA',
-                           table = table_code)
-      
+      if(geography == 'place') {
+        dfs <- get_decennial(geography = geography,
+                             state = 'WA',
+                             table = table_code)
+      } else if (geography == 'msa') {
+        dfs <- get_decennial(geography = msa_geog,
+                             table = table_code)
+      }
       
     } else if (length(table_code) > 1) {
       
       for(table in table_code) {
-        df <- get_decennial(geography = geography,
-                             state = 'WA',
-                             table = table)
+        
+        if(geography == 'place') {
+          df <- get_decennial(geography = geography,
+                              state = 'WA',
+                              table = table)
+        } else if (geography == 'msa') {
+          df <- get_decennial(geography = msa_geog,
+                              table = table)
+        }
+        
         ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
       }
     }
@@ -91,3 +103,12 @@ tbl_names <- paste0('PCT020', LETTERS[1:6])
 # tt7 <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010)
 # tt8 <- get_decennial_recs(geography = 'place', table_code = c('PCT013', 'PCT022'), year = 2010)
 
+vars <- load_variables(2010, "sf1")
+get_decennial(geography = 'metropolitan statistical area/micropolitan statistical area',
+              table = "P001") 
+
+# %>% 
+#   filter(GEOID == '42660')
+
+get_decennial_recs(geography = 'msa', table_code = "H001", year = 2010)
+tt9 <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010)
