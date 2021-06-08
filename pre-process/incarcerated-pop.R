@@ -52,9 +52,13 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
                            state = 'WA',
                            table = table_code)
       
+      
     } else if (length(table_code) > 1) {
       
       for(table in table_code) {
+        df <- get_decennial(geography = geography,
+                             state = 'WA',
+                             table = table)
         ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
       }
     }
@@ -85,4 +89,5 @@ tbl_names <- paste0('PCT020', LETTERS[1:6])
 # tt6 <- get_decennial_recs(geography = 'county', counties, tbl_names, 2010)
 # tt6a <- get_decennial_recs(geography = 'county', table_code = tbl_names, year = 2010)
 # tt7 <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010)
+# tt8 <- get_decennial_recs(geography = 'place', table_code = c('PCT013', 'PCT022'), year = 2010)
 
