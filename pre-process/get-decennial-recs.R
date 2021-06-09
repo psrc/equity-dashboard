@@ -11,7 +11,8 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
   # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   # single table or a vector of tables by tracts in a county or a vector of counties
-  # single msa or place table, multiple msa/place table, or multiple msa/place by multiple tables.
+  # single table or a vector of tables by msa/place or a vector of msa/place
+  # returns all tables/geographies as one data frame 
   # geography arguments = 'tract', 'county', 'place', 'msa'
   
   dfs <- NULL
