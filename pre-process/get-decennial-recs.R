@@ -4,13 +4,13 @@ library(tidyverse)
 Sys.getenv("CENSUS_API_KEY")
 
 
-get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce', 'Snohomish'), table_code, year) {
+get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce', 'Snohomish'), table_code, year, msa_code = NULL) {
   ## get_decennial_recs ----
   
   # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   # single table or a vector of tables by tracts in a county or a vector of counties
-  # geography arguments = 'tract', 'county', 'place'
+  # geography arguments = 'tract', 'county', 'place', 'msa'
   
   dfs <- NULL
   
@@ -56,6 +56,12 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
       } else if (geography == 'msa') {
         dfs <- get_decennial(geography = msa_geog,
                              table = table_code)
+        
+        if(!is.null(msa_code)) {
+          dfs <- dfs %>% 
+            filter(GEOID %in% msa_code)
+        }
+        
       }
       
     } else if (length(table_code) > 1) {
@@ -69,9 +75,16 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
         } else if (geography == 'msa') {
           df <- get_decennial(geography = msa_geog,
                               table = table)
+          
         }
         
         ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
+        
+        if(!is.null(msa_code)) {
+          dfs <- dfs %>% 
+            filter(GEOID %in% msa_code)
+        } 
+        
       }
     }
     
@@ -103,12 +116,6 @@ tbl_names <- paste0('PCT020', LETTERS[1:6])
 # tt7 <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010)
 # tt8 <- get_decennial_recs(geography = 'place', table_code = c('PCT013', 'PCT022'), year = 2010)
 
-vars <- load_variables(2010, "sf1")
-get_decennial(geography = 'metropolitan statistical area/micropolitan statistical area',
-              table = "P001") 
-
-# %>% 
-#   filter(GEOID == '42660')
-
-get_decennial_recs(geography = 'msa', table_code = "H001", year = 2010)
-tt9 <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010)
+tt9 <-  get_decennial_recs(geography = 'msa', table_code = "H001", year = 2010)
+tt9a <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010)
+tt9b <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010, msa_code = '42660')
