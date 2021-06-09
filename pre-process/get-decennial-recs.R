@@ -4,12 +4,14 @@ library(tidyverse)
 Sys.getenv("CENSUS_API_KEY")
 
 
-get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce', 'Snohomish'), table_code, year, msa_code = NULL) {
+get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce', 'Snohomish'), table_code, year, 
+                               place_fips = NULL, msa_fips = NULL) {
   ## get_decennial_recs ----
   
   # retrieve sf1 20XX data for
   # single table or a vector of tables by a single county or a vector of counties 
   # single table or a vector of tables by tracts in a county or a vector of counties
+  # single msa or place table, multiple msa/place table, or multiple msa/place by multiple tables.
   # geography arguments = 'tract', 'county', 'place', 'msa'
   
   dfs <- NULL
@@ -47,6 +49,14 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
     
     msa_geog <- 'metropolitan statistical area/micropolitan statistical area'
     
+    if (!is.null(msa_fips) & is.null(place_fips)) {
+      fips <- msa_fips
+    } else if (!is.null(place_fips) & is.null(msa_fips)) {
+      fips <- place_fips
+    } else if (is.null(msa_fips) & is.null(place_fips)) {
+      fips <- NULL
+    }
+     
     if(length(table_code) == 1) {
       
       if(geography == 'place') {
@@ -56,12 +66,10 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
       } else if (geography == 'msa') {
         dfs <- get_decennial(geography = msa_geog,
                              table = table_code)
-        
-        if(!is.null(msa_code)) {
-          dfs <- dfs %>% 
-            filter(GEOID %in% msa_code)
-        }
-        
+      }
+      
+      if(!is.null(fips)) {
+        dfs <- dfs %>% filter(GEOID %in% fips)
       }
       
     } else if (length(table_code) > 1) {
@@ -80,12 +88,12 @@ get_decennial_recs <- function(geography, counties = c('King', 'Kitsap', 'Pierce
         
         ifelse(is.null(dfs), dfs <- df, dfs <- bind_rows(dfs, df))
         
-        if(!is.null(msa_code)) {
-          dfs <- dfs %>% 
-            filter(GEOID %in% msa_code)
-        } 
-        
       }
+      
+      if(!is.null(fips)) {
+        dfs <- dfs %>% filter(GEOID %in% fips)
+      }
+      
     }
     
   }
@@ -114,8 +122,11 @@ tbl_names <- paste0('PCT020', LETTERS[1:6])
 # tt6 <- get_decennial_recs(geography = 'county', counties, tbl_names, 2010)
 # tt6a <- get_decennial_recs(geography = 'county', table_code = tbl_names, year = 2010)
 # tt7 <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010)
+# tt7a <- get_decennial_recs(geography = 'place', table_code = 'PCT013', year = 2010, place_fips = c("5363000", "5308850"))
 # tt8 <- get_decennial_recs(geography = 'place', table_code = c('PCT013', 'PCT022'), year = 2010)
 
-tt9 <-  get_decennial_recs(geography = 'msa', table_code = "H001", year = 2010)
-tt9a <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010)
-tt9b <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010, msa_code = '42660')
+# tt9 <-  get_decennial_recs(geography = 'msa', table_code = "H001", year = 2010)
+# tt9a <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010)
+# tt9b <- get_decennial_recs(geography = 'msa', table_code = c("H001", "P001"), year = 2010, msa_fips = c('42660', "28420"))
+
+
